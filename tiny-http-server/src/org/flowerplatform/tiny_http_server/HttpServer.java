@@ -1,4 +1,4 @@
-package com.resonate_mp4.httpserver;
+package org.flowerplatform.tiny_http_server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
