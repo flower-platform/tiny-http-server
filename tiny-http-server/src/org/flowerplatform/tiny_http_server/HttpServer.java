@@ -1,6 +1,7 @@
 package org.flowerplatform.tiny_http_server;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
@@ -24,15 +25,20 @@ public class HttpServer implements Runnable {
 	boolean stopped = false;
 	
 	public HttpServer(int port) throws IOException {
+		this(port, true);
+	}
+
+	public HttpServer(int port, boolean localhostOnly) throws IOException {
 		threadPool = Executors.newFixedThreadPool(2);
-//		serverSocket = new ServerSocket(port, 0, InetAddress.getLoopbackAddress());
-		serverSocket = new ServerSocket(port);
+		
+		serverSocket = localhostOnly ? new ServerSocket(port, 0, InetAddress.getLoopbackAddress()) : new ServerSocket(port);
 	
 		commands = new HashMap<>();
 	
 		threadPool.submit(this);
 	}
 
+	
 	public void registerCommand(String url, Class<? extends IHttpCommand> commandClass) {
 		commands.put(url, commandClass);
 	}
