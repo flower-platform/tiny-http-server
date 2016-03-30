@@ -62,8 +62,8 @@ public class ClientHandler implements Runnable {
 				throw new RuntimeException(String.format("Invalid command: %s", command));
 			}
 			
-			if (sb.length() == 0) {
-				sb.append("{}");
+			if (sb.length() == 0 || isEmptyJson(sb)) {
+				sb = new StringBuilder("{}");
 			}
 			
 			try {
@@ -77,6 +77,25 @@ public class ClientHandler implements Runnable {
 				if (result != null) {
 					out.write(mapper.writeValueAsString(result).getBytes());
 				}
+			} catch (ReflectionException re) {
+				// Special handler for this kind of exception; we prettily notify the client that
+				// a reflection error has occurred, which usually means that this version of Arduino IDE
+				// and this version of Flower Platform are no longer compatible.
+				out.println("HTTP/1.1 520 Reflection Error");
+				out.println("Content-type: text/plain");
+				out.println("Connection: close");
+				out.println("Access-Control-Allow-Origin: *");
+				out.println();
+				out.println(re.getMessage());
+			} catch (HttpCommandException hce) { 
+				// Special handler for this kind of exception; we prettily notify the client
+				// about the particular problem that occurred, by setting a custom error code.
+				out.println("HTTP/1.1 521 General Command Exec Error");
+				out.println("Content-type: text/plain");
+				out.println("Connection: close");
+				out.println("Access-Control-Allow-Origin: *");
+				out.println();
+				out.println(hce.getMessage());
 			} catch (Exception e) {
 				out.println("HTTP/1.1 500 Internal Server Error");
 				out.println("Content-type: text/plain");
@@ -96,5 +115,17 @@ public class ClientHandler implements Runnable {
 			}
 		}
 	}
-	
+
+	/**
+	 * Sometimes the content arrives as "" (empty string, but with quotes present). This is apparently valid json,
+	 * and needs to be interpreted as such; This function checks if this is the case.
+	 * @param emptyJson
+	 */
+	private boolean isEmptyJson(StringBuilder emptyJson) {
+		if (emptyJson.toString().equals("\"\"")) {
+			return true;
+		}
+		
+		return false;
+	}
 }
