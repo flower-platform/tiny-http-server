@@ -75,7 +75,11 @@ public class ClientHandler implements Runnable {
 				out.println("Access-Control-Allow-Origin: *");
 				out.println();
 				if (result != null) {
-					out.write(mapper.writeValueAsString(result).getBytes());
+					if (result instanceof byte[]) {
+						out.write((byte[]) result);
+					} else {
+						out.write(mapper.writeValueAsString(result).getBytes());
+					}
 				}
 			} catch (ReflectionException re) {
 				// Special handler for this kind of exception; we prettily notify the client that
