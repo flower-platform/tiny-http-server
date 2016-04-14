@@ -1,6 +1,7 @@
 package org.flowerplatform.tiny_http_server;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
@@ -56,7 +57,6 @@ public class ClientHandler implements Runnable {
 				contentLength -= k;
 			}
 
-			ObjectMapper mapper = new ObjectMapper();
 			Class<? extends IHttpCommand> commandClass = server.commands.get(command);
 			if (commandClass == null) {
 				throw new RuntimeException(String.format("Invalid command: %s", command));
@@ -67,46 +67,28 @@ public class ClientHandler implements Runnable {
 			}
 			
 			try {
+				ObjectMapper mapper = new ObjectMapper();
 				IHttpCommand commandInstance = mapper.readValue(sb.toString(), server.commands.get(command));
 				Object result = commandInstance.run();
-				out.println("HTTP/1.1 200 OK");
-				out.println("Content-type: text/plain");
-				out.println("Connection: close");
-				out.println("Access-Control-Allow-Origin: *");
-				out.println();
-				if (result != null) {
-					if (result instanceof byte[]) {
-						out.write((byte[]) result);
-					} else {
-						out.write(mapper.writeValueAsString(result).getBytes());
-					}
-				}
+				
+				writeResponse(out, 200, "OK", result);
 			} catch (ReflectionException re) {
 				// Special handler for this kind of exception; we prettily notify the client that
 				// a reflection error has occurred, which usually means that this version of Arduino IDE
 				// and this version of Flower Platform are no longer compatible.
-				out.println("HTTP/1.1 520 Reflection Error");
-				out.println("Content-type: text/plain");
-				out.println("Connection: close");
-				out.println("Access-Control-Allow-Origin: *");
-				out.println();
-				out.println(re.getMessage());
+				//
+				// Please also note that we reply with 200 instead of 4XX/5XX; this is intentional 
+				writeResponse(out, 200, "Reflection Error", new DefaultResponse(DefaultResponse.CODE_REFLECTION_ERROR, re.getMessage()));
 			} catch (HttpCommandException hce) { 
 				// Special handler for this kind of exception; we prettily notify the client
 				// about the particular problem that occurred, by setting a custom error code.
-				out.println("HTTP/1.1 521 General Command Exec Error");
-				out.println("Content-type: text/plain");
-				out.println("Connection: close");
-				out.println("Access-Control-Allow-Origin: *");
-				out.println();
-				out.println(hce.getMessage());
+				//
+				// Please also note that we reply with 200 instead of 4XX/5XX; this is intentional 
+				writeResponse(out, 200, "General Command Exec Error", new DefaultResponse(DefaultResponse.CODE_HTTP_COMMAND_EXECUTION_EXCEPTION, hce.getMessage()));
 			} catch (Exception e) {
-				out.println("HTTP/1.1 500 Internal Server Error");
-				out.println("Content-type: text/plain");
-				out.println("Connection: close");
-				out.println("Access-Control-Allow-Origin: *");
-				out.println();
-				out.println(e.getMessage());
+				// Internal error occurred.
+				// Please note that we reply with 200 instead of 4XX/5XX; this is intentional 
+				writeResponse(out, 200, "Internal Error", new DefaultResponse(DefaultResponse.CODE_HTTP_COMMAND_EXECUTION_EXCEPTION, e.getMessage()));
 			}
 		} catch (Throwable t) {
 			t.printStackTrace();
@@ -120,6 +102,23 @@ public class ClientHandler implements Runnable {
 		}
 	}
 
+	private static void writeResponse(PrintStream out, int httpStatusCode, String httpStatusMessage, Object result) throws IOException {
+		ObjectMapper mapper = new ObjectMapper();
+		
+		out.println(String.format("HTTP/1.1 %d %s", httpStatusCode, httpStatusMessage));
+		out.println("Content-type: text/plain");
+		out.println("Connection: close");
+		out.println("Access-Control-Allow-Origin: *");
+		out.println();
+		if (result != null) {
+			if (result instanceof byte[]) {
+				out.write((byte[]) result);
+			} else {
+				out.write(mapper.writeValueAsString(result).getBytes());
+			}
+		}
+	}
+	
 	/**
 	 * Sometimes the content arrives as "" (empty string, but with quotes present). This is apparently valid json,
 	 * and needs to be interpreted as such; This function checks if this is the case.
