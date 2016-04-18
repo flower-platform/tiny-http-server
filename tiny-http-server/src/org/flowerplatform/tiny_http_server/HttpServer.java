@@ -22,6 +22,8 @@ public class HttpServer implements Runnable {
 	
 	private ServerSocket serverSocket;
 
+	private RequestHandler requestHandler = new DefaultRequestHandler();
+	
 	boolean stopped = false;
 	
 	public HttpServer(int port) throws IOException {
@@ -38,7 +40,14 @@ public class HttpServer implements Runnable {
 		threadPool.submit(this);
 	}
 
-	
+	public RequestHandler getRequestHandler() {
+		return requestHandler;
+	}
+
+	public void setRequestHandler(RequestHandler requestHandler) {
+		this.requestHandler = requestHandler;
+	}
+
 	public void registerCommand(String url, Class<? extends IHttpCommand> commandClass) {
 		commands.put(url, commandClass);
 	}

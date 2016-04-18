@@ -7,7 +7,7 @@ package org.flowerplatform.tiny_http_server;
  * 
  * @author Andrei Taras
  */
-public class DefaultResponse {
+public class FlexResponse {
 	
 	public static final int CODE_OK = 0;
 	
@@ -30,11 +30,11 @@ public class DefaultResponse {
 	private int code;
 	private String message;
 
-	public DefaultResponse() {
+	public FlexResponse() {
 		this(-1, null);
 	}
 	
-	public DefaultResponse(int code, String message) {
+	public FlexResponse(int code, String message) {
 		this.code = code;
 		this.message = message;
 	}
