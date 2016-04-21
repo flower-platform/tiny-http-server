@@ -28,6 +28,7 @@ public class ClientHandler implements Runnable {
 			PrintStream out = new PrintStream(socket.getOutputStream());
 			String request = in.readLine();
 //			System.out.println(request);
+// TODO REVIEW: cod gunoi 			
 			String method = request.substring(0, request.indexOf(' '));
 			if (!method.equals("POST")) {
 				out.println("HTTP/1.1 405 Method Not Allowed");
@@ -41,6 +42,7 @@ public class ClientHandler implements Runnable {
 			String s;
 			while ((s = in.readLine()).length() > 0) {
 //				System.out.println(s);
+// TODO REVIEW: cod gunoi 
 				if (s.toLowerCase().startsWith("content-length")) {
 					contentLength = Integer.parseInt(s.substring(s.indexOf(' ') + 1));
 				}

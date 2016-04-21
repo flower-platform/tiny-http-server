@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Andrei Taras
  */
 public class FlexRequestHandler implements RequestHandler {
+// TODO REVIEW: dupa ce migram interfata de administrare pe GWT, cred ca putem sa scapam de aceasta clasa, precum si de FlexResponse. Apoi, ReflExc, HttpCommandEx: cred ca pot sta in celalalt client
 	
 	public void processRequest(HttpServer server, String command, String requestData, PrintStream responseOutputStream) throws IOException {
 		try {
@@ -31,6 +32,7 @@ public class FlexRequestHandler implements RequestHandler {
 			// Please also note that we reply with 200 instead of 4XX/5XX; this is intentional 
 			writeResponse(responseOutputStream, 200, "General Command Exec Error", new FlexResponse(FlexResponse.CODE_HTTP_COMMAND_EXECUTION_EXCEPTION, hce.getMessage()));
 		} catch (Exception e) {
+// TODO REVIEW: mai bine Throwable?
 			// Internal error occurred.
 			// Please note that we reply with 200 instead of 4XX/5XX; this is intentional 
 			writeResponse(responseOutputStream, 200, "Internal Error", new FlexResponse(FlexResponse.CODE_HTTP_COMMAND_EXECUTION_EXCEPTION, e.getMessage()));
