@@ -17,7 +17,8 @@ public class FlexRequestHandler implements RequestHandler {
 			IHttpCommand commandInstance = mapper.readValue(requestData, server.commands.get(command));
 			Object result = commandInstance.run();
 			
-			writeResponse(responseOutputStream, 200, "OK", result);
+			// Note : a null result will be written as a FlexResponse.CODE_OK json. This is needed by the flex part.
+			writeResponse(responseOutputStream, 200, "OK", result != null ? result : new FlexResponse(FlexResponse.CODE_OK, "OK"));
 		} catch (ReflectionException re) {
 			// Special handler for this kind of exception; we prettily notify the client that
 			// a reflection error has occurred, which usually means that this version of Arduino IDE
@@ -47,6 +48,7 @@ public class FlexRequestHandler implements RequestHandler {
 		out.println("Connection: close");
 		out.println("Access-Control-Allow-Origin: *");
 		out.println();
+		
 		if (result != null) {
 			if (result instanceof byte[]) {
 				out.write((byte[]) result);
