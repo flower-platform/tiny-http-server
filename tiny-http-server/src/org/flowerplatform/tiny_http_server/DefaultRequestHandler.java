@@ -15,8 +15,15 @@ public class DefaultRequestHandler implements RequestHandler {
 	public void processRequest(HttpServer server, String command, String requestData, PrintStream responseOutputStream) throws IOException {
 		try {
 			ObjectMapper mapper = new ObjectMapper();
-			IHttpCommand commandInstance = mapper.readValue(requestData, server.commands.get(command));
+			IHttpCommand commandInstance = null;
+			if (server.getCommandFactory() == null) {
+				mapper.readValue(requestData, server.commands.get(command));
+			} else {
+				commandInstance = (IHttpCommand) server.getCommandFactory().createCommandInstance(server.commands.get(command), requestData);
+			}
+			
 			Object result = commandInstance.run();
+			
 			responseOutputStream.println("HTTP/1.1 200 OK");
 			responseOutputStream.println("Content-type: text/plain");
 			responseOutputStream.println("Connection: close");

@@ -22,6 +22,8 @@ public class HttpServer implements Runnable {
 	
 	private ServerSocket serverSocket;
 
+	private CommandFactory commandFactory;
+	
 	private RequestHandler requestHandler = new DefaultRequestHandler();
 	
 	boolean stopped = false;
@@ -46,6 +48,14 @@ public class HttpServer implements Runnable {
 
 	public void setRequestHandler(RequestHandler requestHandler) {
 		this.requestHandler = requestHandler;
+	}
+	
+	public CommandFactory getCommandFactory() {
+		return commandFactory;
+	}
+
+	public void setCommandFactory(CommandFactory commandFactory) {
+		this.commandFactory = commandFactory;
 	}
 
 	public void registerCommand(String url, Class<? extends IHttpCommand> commandClass) {

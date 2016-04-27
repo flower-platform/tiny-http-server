@@ -14,7 +14,13 @@ public class FlexRequestHandler implements RequestHandler {
 	public void processRequest(HttpServer server, String command, String requestData, PrintStream responseOutputStream) throws IOException {
 		try {
 			ObjectMapper mapper = new ObjectMapper();
-			IHttpCommand commandInstance = mapper.readValue(requestData, server.commands.get(command));
+			IHttpCommand commandInstance = null;
+			if (server.getCommandFactory() == null) {
+				mapper.readValue(requestData, server.commands.get(command));
+			} else {
+				commandInstance = (IHttpCommand) server.getCommandFactory().createCommandInstance(server.commands.get(command), requestData);
+			}
+
 			Object result = commandInstance.run();
 			
 			// Note : a null result will be written as a FlexResponse.CODE_OK json. This is needed by the flex part.
