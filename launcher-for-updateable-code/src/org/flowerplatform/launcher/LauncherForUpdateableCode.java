@@ -11,29 +11,27 @@ import org.apache.commons.io.FileUtils;
  * @author Silviu Negoita
  */
 public class LauncherForUpdateableCode {
-	String previousBinDir;
-	String currentBinDir;
-	String newBinDir;
+	File previousBinDir;
+	File currentBinDir;
+	File newBinDir;
 	String className;
 	
 	public LauncherForUpdateableCode(String previousBinDir, String currentBinDir, String newBinDir, String className) {
-		this.previousBinDir = previousBinDir;
-		this.currentBinDir = currentBinDir;
-		this.newBinDir = newBinDir;
+		this.previousBinDir = new File(previousBinDir);
+		this.currentBinDir = new File(currentBinDir);
+		this.newBinDir = new File(newBinDir);
 		this.className = className;
 	}
 
 	public void launch(LauncherDto param) throws ClassNotFoundException, IOException {
-		File newBin = new File(currentBinDir);
-		if (newBin.exists()) {
-			FileUtils.deleteDirectory(new File(previousBinDir));
-			previousBinDir = currentBinDir;
-			currentBinDir = newBinDir;
+		if (newBinDir.exists()) {
+			FileUtils.deleteDirectory(previousBinDir);
+			currentBinDir.renameTo(previousBinDir);
+			newBinDir.renameTo(currentBinDir);
 		}
 		
-		File currentDirectory = new File(currentBinDir);
 		try {
-			File[] archives = currentDirectory.listFiles(new FilenameFilter() {
+			File[] archives = currentBinDir.listFiles(new FilenameFilter() {
 				public boolean accept(File dir, String name) {
 					return (name.toLowerCase().endsWith(".jar") ||
 							name.toLowerCase().endsWith(".zip"));
@@ -44,6 +42,7 @@ public class LauncherForUpdateableCode {
 	        for (int j = 0; j < urlList.length; j++) {
 	        	urlList[j] = archives[j].toURI().toURL();
 	        }
+	        
 	        URLClassLoader loader = new URLClassLoader(urlList);
 	        
 	        Class<?> toLaunchClass = Class.forName(className, true, loader);
@@ -52,5 +51,11 @@ public class LauncherForUpdateableCode {
 		} catch (Exception e) {
 			 e.printStackTrace();
 		}
+	}
+	
+	// this is for test
+	public static void main(String[] args) throws ClassNotFoundException, IOException {
+		LauncherForUpdateableCode launcher = new LauncherForUpdateableCode("resources/prevBin/", "resources/currBin/", "resources/newBin/", "org.flowerplatform.launcher.test.RunnableHelloWorld");
+		launcher.launch(new LauncherDto(null));
 	}
 }

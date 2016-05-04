@@ -19,7 +19,7 @@ import org.apache.commons.io.IOUtils;
  * @author Silviu Negoita
  */
 public class Downloader {
-	final static String ARCHIVE_DOWNLOAD_NAME = "download.zip";
+	final static String ARCHIVE_DOWNLOAD_NAME = "/download.zip";
 	public static void downloadAndUnzip(String url, File location) {
 		
 		InputStream in = null;
@@ -35,13 +35,15 @@ public class Downloader {
 			while ((count = in.read(data, 0, 1024)) != -1) {
 				out.write(data, 0, count);
 	        }
-	        unzipArchive(archive, location);	        
+	        unzipArchive(archive, location);
 		} catch (Exception e) {
 	        throw new RuntimeException(e);
 		} finally {		
 			IOUtils.closeQuietly(in);
 			IOUtils.closeQuietly(out);
+			archive.delete();
 		}
+		
 	}
 	
 	@SuppressWarnings("rawtypes")
