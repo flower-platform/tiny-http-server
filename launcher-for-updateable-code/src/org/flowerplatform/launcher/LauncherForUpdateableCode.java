@@ -1,7 +1,15 @@
 package org.flowerplatform.launcher;
 
 import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
 
+import org.apache.commons.io.FileUtils;
+/**
+ * @author Silviu Negoita
+ */
 public class LauncherForUpdateableCode {
 	String previousBinDir;
 	String currentBinDir;
@@ -14,33 +22,36 @@ public class LauncherForUpdateableCode {
 		this.newBinDir = newBinDir;
 		this.className = className;
 	}
-	
-	public void deleteFolder(File folder) {
-		// TODO delete a flder and its containing
-	}
-	
-	public void launch(LauncherDto param) throws ClassNotFoundException {
-		//TODO check if newBin exist. if true, delete prevBin, curBin = prevBin, newBin = curBin
+
+	public void launch(LauncherDto param) throws ClassNotFoundException, IOException {
 		File newBin = new File(currentBinDir);
 		if (newBin.exists()) {
-			File prevBin = new File(previousBinDir);
-			deleteFolder(prevBin);
+			FileUtils.deleteDirectory(new File(previousBinDir));
 			previousBinDir = currentBinDir;
 			currentBinDir = newBinDir;
 		}
 		
+		File currentDirectory = new File(currentBinDir);
 		try {
-			//TODO load all jar/zips from curBin. 
+			File[] archives = currentDirectory.listFiles(new FilenameFilter() {
+				public boolean accept(File dir, String name) {
+					return (name.toLowerCase().endsWith(".jar") ||
+							name.toLowerCase().endsWith(".zip"));
+				}
+			});
 			
-	        //TODO init launcherClass and start	        
-	      
+			URL[] urlList = new URL[archives.length];
+	        for (int j = 0; j < urlList.length; j++) {
+	        	urlList[j] = archives[j].toURI().toURL();
+	        }
+	        FileUtils.deleteDirectory(null);
+	        URLClassLoader loader = new URLClassLoader(urlList);
 	        
+	        Class<?> toLaunchClass = Class.forName(className, true, loader);
+	        RunnableWithParam<Void, LauncherDto> toLaunchRunnable = (RunnableWithParam<Void, LauncherDto>) toLaunchClass.newInstance();
+	        toLaunchRunnable.run(param);
 		} catch (Exception e) {
-			// TODO: handle exception
+			 e.printStackTrace();
 		}
-		
 	}
-	
-	
-	
 }
