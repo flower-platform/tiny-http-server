@@ -44,7 +44,6 @@ public class LauncherForUpdateableCode {
 	        for (int j = 0; j < urlList.length; j++) {
 	        	urlList[j] = archives[j].toURI().toURL();
 	        }
-	        FileUtils.deleteDirectory(null);
 	        URLClassLoader loader = new URLClassLoader(urlList);
 	        
 	        Class<?> toLaunchClass = Class.forName(className, true, loader);
