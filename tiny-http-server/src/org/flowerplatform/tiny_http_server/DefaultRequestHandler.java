@@ -17,7 +17,7 @@ public class DefaultRequestHandler implements RequestHandler {
 			ObjectMapper mapper = new ObjectMapper();
 			IHttpCommand commandInstance = null;
 			if (server.getCommandFactory() == null) {
-				mapper.readValue(requestData, server.commands.get(command));
+				commandInstance = mapper.readValue(requestData, server.commands.get(command));
 			} else {
 				commandInstance = (IHttpCommand) server.getCommandFactory().createCommandInstance(server.commands.get(command), requestData);
 			}
