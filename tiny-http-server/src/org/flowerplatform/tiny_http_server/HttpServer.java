@@ -33,7 +33,7 @@ public class HttpServer implements Runnable {
 	}
 
 	public HttpServer(int port, boolean localhostOnly) throws IOException {
-		threadPool = Executors.newFixedThreadPool(2);
+		threadPool = Executors.newFixedThreadPool(5);
 		
 		serverSocket = localhostOnly ? new ServerSocket(port, 0, InetAddress.getLoopbackAddress()) : new ServerSocket(port);
 	

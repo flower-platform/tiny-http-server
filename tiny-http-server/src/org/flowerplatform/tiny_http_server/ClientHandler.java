@@ -27,6 +27,9 @@ public class ClientHandler implements Runnable {
 			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			PrintStream out = new PrintStream(socket.getOutputStream());
 			String request = in.readLine();
+			if (request == null) {
+				return;
+			}
 			String method = request.substring(0, request.indexOf(' '));
 			if (!method.equals("POST")) {
 				out.println("HTTP/1.1 405 Method Not Allowed");
