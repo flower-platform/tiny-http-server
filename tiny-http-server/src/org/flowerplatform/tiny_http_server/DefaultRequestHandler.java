@@ -33,7 +33,7 @@ public class DefaultRequestHandler implements RequestHandler {
 				if (result instanceof byte[]) {
 					responseOutputStream.write((byte[]) result);
 				} else {
-					responseOutputStream.write(mapper.writeValueAsString(result).getBytes());
+					mapper.writeValue(responseOutputStream, result);
 				}
 			}
 		} catch (Exception e) {
