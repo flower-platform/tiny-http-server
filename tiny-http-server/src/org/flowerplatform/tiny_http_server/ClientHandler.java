@@ -33,9 +33,7 @@ public class ClientHandler implements Runnable {
 			String method = request.substring(0, request.indexOf(' '));
 			if (!method.equals("POST")) {
 				out.println("HTTP/1.1 405 Method Not Allowed");
-				out.println("Content-type: text/plain");
-				out.println("Connection: close");
-				out.println("Access-Control-Allow-Origin: *");
+				Utils.printCommonHeaders(out);
 				out.println();
 				return;
 			}
