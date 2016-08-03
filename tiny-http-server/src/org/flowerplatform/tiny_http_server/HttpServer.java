@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -67,6 +68,12 @@ public class HttpServer implements Runnable {
 			while (!stopped) {
 				Socket clientSocket = serverSocket.accept();
 				threadPool.submit(new ClientHandler(this, clientSocket));
+			}
+		} catch (SocketException se) {
+			// Note that we don't print this exception if server is stopped. It is to be expected 
+			// then.
+			if (!stopped) {
+				se.printStackTrace();
 			}
 		} catch (Throwable t) {
 			t.printStackTrace();
