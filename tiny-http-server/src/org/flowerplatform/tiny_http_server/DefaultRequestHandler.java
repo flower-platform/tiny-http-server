@@ -12,6 +12,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class DefaultRequestHandler implements RequestHandler {
 
+	/**
+	 * The default HTTP status code that we send back when an error is encountered.
+	 */
+	private static final int DEFAULT_ERROR_HTTP_CODE = 500;
+	
 	public void processRequest(HttpServer server, String command, String requestData, PrintStream responseOutputStream) throws IOException {
 		try {
 			ObjectMapper mapper = new ObjectMapper();
@@ -34,12 +39,19 @@ public class DefaultRequestHandler implements RequestHandler {
 					mapper.writeValue(responseOutputStream, result);
 				}
 			}
-		} catch (Exception e) {
-			responseOutputStream.println("HTTP/1.1 500 Internal Server Error");
-			Utils.printCommonHeaders(responseOutputStream);
-			responseOutputStream.println();
-			responseOutputStream.println(e.getMessage());
+		} catch (HttpCommandException hce) {
+			Integer httpCode = hce.getHttpCode() != null ? hce.getHttpCode() : DEFAULT_ERROR_HTTP_CODE; 
+			sendError(httpCode, hce, responseOutputStream);
+		} catch (Throwable th) {
+			sendError(DEFAULT_ERROR_HTTP_CODE, th, responseOutputStream);
 		}
+	}
+	
+	private void sendError(int httpCode, Throwable th, PrintStream responseOutputStream) {
+		responseOutputStream.println("HTTP/1.1 " + httpCode + " Internal Server Error");
+		Utils.printCommonHeaders(responseOutputStream);
+		responseOutputStream.println();
+		responseOutputStream.println(th.getMessage());		
 	}
 	
 }
