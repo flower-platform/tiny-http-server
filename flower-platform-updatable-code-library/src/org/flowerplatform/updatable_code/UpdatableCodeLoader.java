@@ -1,4 +1,4 @@
-package org.flowerplatform.updateable_launcher;
+package org.flowerplatform.updatable_code;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -14,7 +14,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 /**
  * @author Silviu Negoita
  */
-public class LauncherForUpdateableCode {
+public class UpdatableCodeLoader {
 	
 	private File previousBinDir;
 
@@ -22,7 +22,7 @@ public class LauncherForUpdateableCode {
 	
 	private File newBinDir;
 
-	public LauncherForUpdateableCode(String previousBinDir, String currentBinDir, String newBinDir) {
+	public UpdatableCodeLoader(String previousBinDir, String currentBinDir, String newBinDir) {
 		this.previousBinDir = new File(previousBinDir);
 		this.currentBinDir = new File(currentBinDir);
 		this.newBinDir = new File(newBinDir);

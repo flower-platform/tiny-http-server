@@ -1,4 +1,4 @@
-package org.flowerplatform.updateable_launcher;
+package org.flowerplatform.updatable_code.util;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -8,24 +8,63 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 /**
- * Class used to download and unzip a archive
+ * Utilities for checking and downloading updates
  * 
  * @author Silviu Negoita
+ * @author Claudiu Matei
  */
-public class Downloader {
+public class UpdatableCodeUtils {
 	
 	final static String ARCHIVE_DOWNLOAD_NAME = "/download.zip";
 
+	
+	public static Properties checkAndDownloadUpdate(String currentVersion, String updateInfoUrl, File updateLocation) {
+		Properties updateInfo = getUpdateInfo(updateInfoUrl);
+		
+		// check update version
+		if (!isUpdateNewer(currentVersion, updateInfo.getProperty("version"))) {
+			return null;
+		}
+
+		// download new version
+		UpdatableCodeUtils.downloadAndUnzip(updateInfo.getProperty("url"), updateLocation);
+		return updateInfo;
+	}
+
+	public static Properties getUpdateInfo(String updateInfoUrl) {
+		Properties updateInfo = new Properties();
+		try (InputStream in = new URL(updateInfoUrl).openStream()) {
+			updateInfo.load(in);
+		} catch (IOException e) {
+			throw new RuntimeException("Error getting update information from: " + updateInfoUrl, e);
+		} 
+		return updateInfo;
+	}
+
+	public static boolean isUpdateNewer(String currentVersion, String updateVersion) {
+		String[] splitCurrentVersion = currentVersion.split("\\.");
+		String[] splitUpdateVersion = updateVersion.split("\\.");
+		for (int i = 0 ; i < Math.min(splitCurrentVersion.length, splitUpdateVersion.length); i++) {
+			if (Integer.parseInt(splitCurrentVersion[i]) < Integer.parseInt(splitUpdateVersion[i])) {
+				return true;
+			}
+		}
+		return splitCurrentVersion.length < splitUpdateVersion.length;
+	}
+	
 	public static void downloadAndUnzip(String url, File location) {
 		InputStream in = null;
 		FileOutputStream out = null;
-		String archivePath = location.getAbsolutePath() + ARCHIVE_DOWNLOAD_NAME;
-		File archive = new File(archivePath);
+		File archive = null;
 		try {
+			new File(location.getCanonicalPath()).mkdirs();
+			String archivePath = location.getCanonicalPath() + ARCHIVE_DOWNLOAD_NAME;
+			archive = new File(archivePath);
 			URL website = new URL((String) url);
 			in = website.openStream();
 			out = new FileOutputStream(archivePath);
@@ -36,16 +75,20 @@ public class Downloader {
 			}
 			unzipArchive(archive, location);
 		} catch (Exception e) {
+			location.delete();
 			throw new RuntimeException(e);
 		} finally {
 			try { in.close(); } catch (Exception e) { e.printStackTrace(); }
 			try { out.close(); } catch (Exception e) { e.printStackTrace(); }
-			archive.delete();
+			if (archive != null) {
+				archive.delete();
+			}
 		}
 	}
 
+	
 	@SuppressWarnings("rawtypes")
-	public static void unzipArchive(File archive, File outputDir) throws IOException {
+	private static void unzipArchive(File archive, File outputDir) throws IOException {
 		ZipFile zipfile = new ZipFile(archive);
 		for (Enumeration e = zipfile.entries(); e.hasMoreElements();) {
 			ZipEntry entry = ((ZipEntry) e.nextElement());
@@ -53,7 +96,7 @@ public class Downloader {
 		}
 		zipfile.close();
 	}
-
+	
 	private static void unzipEntry(ZipFile zipfile, ZipEntry entry, File outputDir) throws IOException {
 		File outputFile = new File(outputDir, entry.getName());
 
@@ -81,5 +124,5 @@ public class Downloader {
 			try { inputStream.close(); } catch (Exception e) { e.printStackTrace(); }
 		}
 	}
-
+	
 }
