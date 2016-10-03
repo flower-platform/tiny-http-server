@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * 
@@ -28,6 +30,8 @@ public class HttpServer implements Runnable {
 	private RequestHandler requestHandler = new DefaultRequestHandler();
 	
 	boolean stopped = false;
+	
+	private Logger logger = Logger.getGlobal();
 	
 	public HttpServer(int port) throws IOException {
 		this(port, true);
@@ -73,15 +77,15 @@ public class HttpServer implements Runnable {
 			// Note that we don't print this exception if server is stopped. It is to be expected 
 			// then.
 			if (!stopped) {
-				se.printStackTrace();
+				logger.log(Level.SEVERE, se.getMessage(), se);
 			}
 		} catch (Throwable t) {
-			t.printStackTrace();
+			logger.log(Level.SEVERE, t.getMessage(), t);
 		} finally {
 			try { 
 				serverSocket.close(); 
 			} catch (Throwable t) { 
-				t.printStackTrace(); 
+				logger.log(Level.SEVERE, t.getMessage(), t);
 			} 
 		}
 	}
@@ -91,7 +95,7 @@ public class HttpServer implements Runnable {
 		try { 
 			serverSocket.close(); 
 		} catch (Throwable t) {
-			t.printStackTrace();
+			logger.log(Level.SEVERE, t.getMessage(), t);
 		}
 		threadPool.shutdownNow();
 	}

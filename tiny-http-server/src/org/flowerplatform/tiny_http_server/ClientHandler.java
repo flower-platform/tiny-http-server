@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * 
@@ -15,6 +17,8 @@ public class ClientHandler implements Runnable {
 	private Socket socket;
 
 	private HttpServer server;
+	
+	private Logger logger = Logger.getGlobal();
 	
 	public ClientHandler(HttpServer server, Socket socket) {
 		this.socket = socket;
@@ -68,13 +72,13 @@ public class ClientHandler implements Runnable {
 			server.getRequestHandler().processRequest(server, command, requestData, out);
 			
 		} catch (Throwable t) {
-			t.printStackTrace();
+			logger.log(Level.SEVERE, t.getMessage(), t);
 		} finally {
 			try { 
 				socket.close(); 
 			} 
 			catch (Throwable t) { 
-				t.printStackTrace(); 
+				logger.log(Level.SEVERE, t.getMessage(), t);
 			}
 		}
 	}
