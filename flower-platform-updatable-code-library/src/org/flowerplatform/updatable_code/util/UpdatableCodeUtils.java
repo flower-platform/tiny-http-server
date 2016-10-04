@@ -50,11 +50,14 @@ public class UpdatableCodeUtils {
 		String[] splitCurrentVersion = currentVersion.split("\\.");
 		String[] splitUpdateVersion = updateVersion.split("\\.");
 		for (int i = 0 ; i < Math.min(splitCurrentVersion.length, splitUpdateVersion.length); i++) {
-			if (Integer.parseInt(splitCurrentVersion[i]) < Integer.parseInt(splitUpdateVersion[i])) {
-				return true;
+			int current = Integer.parseInt(splitCurrentVersion[i]);
+			int update = Integer.parseInt(splitUpdateVersion[i]);
+			if (current == update) {
+				continue;
 			}
+			return update > current;
 		}
-		return splitCurrentVersion.length < splitUpdateVersion.length;
+		return  splitUpdateVersion.length > splitCurrentVersion.length;
 	}
 	
 	public static void downloadAndUnzip(String url, File location) {
@@ -124,5 +127,5 @@ public class UpdatableCodeUtils {
 			try { inputStream.close(); } catch (Exception e) { e.printStackTrace(); }
 		}
 	}
-	
+
 }
