@@ -64,9 +64,12 @@ public class UpdatableCodeUtils {
 		InputStream in = null;
 		FileOutputStream out = null;
 		File archive = null;
+		File tmpLocation = null;
+		
 		try {
-			new File(location.getCanonicalPath()).mkdirs();
-			String archivePath = location.getCanonicalPath() + ARCHIVE_DOWNLOAD_NAME;
+			tmpLocation = new File(location.getCanonicalPath() + ".tmp");
+			tmpLocation.mkdirs();
+			String archivePath = tmpLocation.getCanonicalPath() + ARCHIVE_DOWNLOAD_NAME;
 			archive = new File(archivePath);
 			URL website = new URL((String) url);
 			in = website.openStream();
@@ -76,7 +79,7 @@ public class UpdatableCodeUtils {
 			while ((count = in.read(data)) != -1) {
 				out.write(data, 0, count);
 			}
-			unzipArchive(archive, location);
+			unzipArchive(archive, tmpLocation);
 		} catch (Exception e) {
 			location.delete();
 			throw new RuntimeException(e);
@@ -87,6 +90,7 @@ public class UpdatableCodeUtils {
 				archive.delete();
 			}
 		}
+		tmpLocation.renameTo(location);
 	}
 
 	
